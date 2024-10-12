@@ -1,5 +1,7 @@
 package com.example.myapplication54.ui.linklibrary
 
+import android.content.Intent
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -7,7 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication54.databinding.ItemLinkBinding
 
-class LinkAdapter : ListAdapter<String, LinkAdapter.LinkViewHolder>(LinkDiffCallback()) {
+class LinkAdapter : ListAdapter<LinkItem, LinkAdapter.LinkViewHolder>(LinkDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LinkViewHolder {
         val binding = ItemLinkBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -19,17 +21,22 @@ class LinkAdapter : ListAdapter<String, LinkAdapter.LinkViewHolder>(LinkDiffCall
     }
 
     class LinkViewHolder(private val binding: ItemLinkBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(link: String) {
-            binding.textViewLink.text = link
+        fun bind(linkItem: LinkItem) {
+            binding.textViewTitle.text = linkItem.title
+            binding.textViewUrl.text = linkItem.url
+            binding.root.setOnClickListener {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(linkItem.url))
+                it.context.startActivity(intent)
+            }
         }
     }
 
-    class LinkDiffCallback : DiffUtil.ItemCallback<String>() {
-        override fun areItemsTheSame(oldItem: String, newItem: String): Boolean {
-            return oldItem == newItem
+    class LinkDiffCallback : DiffUtil.ItemCallback<LinkItem>() {
+        override fun areItemsTheSame(oldItem: LinkItem, newItem: LinkItem): Boolean {
+            return oldItem.url == newItem.url
         }
 
-        override fun areContentsTheSame(oldItem: String, newItem: String): Boolean {
+        override fun areContentsTheSame(oldItem: LinkItem, newItem: LinkItem): Boolean {
             return oldItem == newItem
         }
     }
