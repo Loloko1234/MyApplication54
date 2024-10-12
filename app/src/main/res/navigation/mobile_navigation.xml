@@ -31,9 +31,13 @@
 
     <fragment
         android:id="@+id/readingSpaceFragment"
-        android:name="com.example.myapplication54.ui.ReadingSpaceFragment"
+        android:name="com.example.myapplication54.ui.readingspace.ReadingSpaceFragment"
         android:label="Reading Space"
-        tools:layout="@layout/fragment_reading_space" />
+        tools:layout="@layout/fragment_reading_space" >
+        <argument
+            android:name="linkItemIndex"
+            app:argType="integer" />
+    </fragment>
 
     <action
         android:id="@+id/action_nav_link_library_to_readingSpaceFragment"

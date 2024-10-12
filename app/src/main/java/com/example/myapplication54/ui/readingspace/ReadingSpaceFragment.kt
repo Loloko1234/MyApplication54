@@ -1,4 +1,4 @@
-package com.example.myapplication54.ui
+package com.example.myapplication54.ui.readingspace
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,6 +14,7 @@ class ReadingSpaceFragment : Fragment() {
     private var _binding: FragmentReadingSpaceBinding? = null
     private val binding get() = _binding!!
     private lateinit var viewModel: LinkLibraryViewModel
+    private var currentLinkItemIndex: Int = -1
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,17 +30,41 @@ class ReadingSpaceFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity()).get(LinkLibraryViewModel::class.java)
 
         arguments?.let {
-            val linkItemIndex = it.getInt("linkItemIndex", -1)
-            if (linkItemIndex != -1) {
-                viewModel.links.observe(viewLifecycleOwner) { links ->
-                    val linkItem = links[linkItemIndex]
-                    binding.textViewTitle.text = "${linkItem.title} - Chapter ${linkItem.chapter}"
-                    binding.textViewContent.text = linkItem.content
-                    if (linkItem.content.isBlank()) {
-                        binding.textViewContent.text = "Loading content..."
-                        viewModel.scrapeContent(linkItem)
-                    }
+            currentLinkItemIndex = it.getInt("linkItemIndex", -1)
+            if (currentLinkItemIndex != -1) {
+                updateUI()
+            }
+        }
+
+        binding.buttonPreviousChapter.setOnClickListener {
+            changeChapter(-1)
+        }
+
+        binding.buttonNextChapter.setOnClickListener {
+            changeChapter(1)
+        }
+    }
+
+    private fun updateUI() {
+        viewModel.links.observe(viewLifecycleOwner) { links ->
+            val linkItem = links.getOrNull(currentLinkItemIndex)
+            if (linkItem != null) {
+                binding.textViewTitle.text = "${linkItem.title} - Chapter ${linkItem.chapter}"
+                binding.textViewContent.text = linkItem.content
+                if (linkItem.content.isBlank()) {
+                    binding.textViewContent.text = "Loading content..."
+                    viewModel.scrapeContent(linkItem)
                 }
+            }
+        }
+    }
+
+    private fun changeChapter(delta: Int) {
+        viewModel.links.value?.getOrNull(currentLinkItemIndex)?.let { linkItem ->
+            val newChapter = linkItem.chapter + delta
+            if (newChapter > 0) {
+                viewModel.changeChapter(linkItem, newChapter)
+                updateUI()
             }
         }
     }

@@ -100,4 +100,17 @@ class LinkLibraryViewModel(application: Application) : AndroidViewModel(applicat
             }
         }
     }
+
+    fun changeChapter(linkItem: LinkItem, newChapter: Int) {
+        viewModelScope.launch {
+            val updatedLinks = _links.value?.toMutableList() ?: mutableListOf()
+            val index = updatedLinks.indexOfFirst { it.url == linkItem.url }
+            if (index != -1) {
+                updatedLinks[index] = linkItem.copy(chapter = newChapter, content = "")
+                _links.value = updatedLinks
+                saveLinks()
+                scrapeContent(updatedLinks[index])
+            }
+        }
+    }
 }
