@@ -35,7 +35,14 @@ class LinkLibraryFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = LinkAdapter()
+        adapter = LinkAdapter(
+            onItemClick = { linkItem ->
+                // Handle item click (e.g., open the link)
+            },
+            onRemoveClick = { linkItem ->
+                viewModel.removeLink(linkItem)
+            }
+        )
         binding.recyclerViewLinks.layoutManager = LinearLayoutManager(context)
         binding.recyclerViewLinks.adapter = adapter
     }

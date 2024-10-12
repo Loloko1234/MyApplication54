@@ -1,3 +1,4 @@
 make link library more functional
 - add a button to remove a link
 - make the links scraped after clicking on them
+-Jak juz moze dziala zapisywanie w bazie to zeby pobierało do bibloteki z bazy

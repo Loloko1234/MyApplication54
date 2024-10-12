@@ -9,7 +9,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication54.databinding.ItemLinkBinding
 
-class LinkAdapter : ListAdapter<LinkItem, LinkAdapter.LinkViewHolder>(LinkDiffCallback()) {
+class LinkAdapter(
+    private val onItemClick: (LinkItem) -> Unit,
+    private val onRemoveClick: (LinkItem) -> Unit
+) : ListAdapter<LinkItem, LinkAdapter.LinkViewHolder>(LinkDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LinkViewHolder {
         val binding = ItemLinkBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -20,13 +23,15 @@ class LinkAdapter : ListAdapter<LinkItem, LinkAdapter.LinkViewHolder>(LinkDiffCa
         holder.bind(getItem(position))
     }
 
-    class LinkViewHolder(private val binding: ItemLinkBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class LinkViewHolder(private val binding: ItemLinkBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(linkItem: LinkItem) {
             binding.textViewTitle.text = linkItem.title
             binding.textViewUrl.text = linkItem.url
             binding.root.setOnClickListener {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(linkItem.url))
-                it.context.startActivity(intent)
+                onItemClick(linkItem)
+            }
+            binding.buttonRemove.setOnClickListener {
+                onRemoveClick(linkItem)
             }
         }
     }
