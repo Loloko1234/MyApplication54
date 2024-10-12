@@ -14,7 +14,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-data class LinkItem(val url: String, var title: String = "")
+data class LinkItem(val url: String, var title: String = "", var chapter: Int = 1, var content: String = "")
 
 class LinkLibraryViewModel(application: Application) : AndroidViewModel(application) {
     private val _links = MutableLiveData<List<LinkItem>>()
@@ -83,5 +83,21 @@ class LinkLibraryViewModel(application: Application) : AndroidViewModel(applicat
         currentLinks.remove(linkItem)
         _links.value = currentLinks
         saveLinks()
+    }
+
+    fun scrapeContent(linkItem: LinkItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                Log.d("Scraping", "Starting to scrape: ${linkItem.url}")
+                val doc = Jsoup.connect(linkItem.url).get()
+                val paragraphs = doc.select("p")
+                val content = paragraphs.joinToString("\n\n") { it.text() }
+                Log.d("Scraping", "Scraped content length: ${content.length}")
+                linkItem.content = content
+                _links.postValue(_links.value)
+            } catch (e: Exception) {
+                Log.e("Scraping", "Error scraping content", e)
+            }
+        }
     }
 }

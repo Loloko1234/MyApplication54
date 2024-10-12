@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication54.databinding.ItemLinkBinding
+import android.view.View
 
 class LinkAdapter(
     private val onItemClick: (LinkItem) -> Unit,
@@ -26,7 +27,9 @@ class LinkAdapter(
     inner class LinkViewHolder(private val binding: ItemLinkBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(linkItem: LinkItem) {
             binding.textViewTitle.text = linkItem.title
-            binding.textViewUrl.text = linkItem.url
+            binding.textViewChapter.text = "Chapter ${linkItem.chapter}"
+            binding.textViewChapter.visibility = View.VISIBLE
+            binding.textViewUrl.visibility = View.GONE
             binding.root.setOnClickListener {
                 onItemClick(linkItem)
             }

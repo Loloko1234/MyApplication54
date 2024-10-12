@@ -7,7 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.navigation.fragment.findNavController
 import com.example.myapplication54.databinding.FragmentLinkLibraryBinding
+import com.example.myapplication54.R
 
 class LinkLibraryFragment : Fragment() {
 
@@ -37,7 +39,14 @@ class LinkLibraryFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = LinkAdapter(
             onItemClick = { linkItem ->
-                // Handle item click (e.g., open the link)
+                val index = viewModel.links.value?.indexOf(linkItem) ?: -1
+                if (index != -1) {
+                    viewModel.scrapeContent(linkItem)
+                    val bundle = Bundle().apply {
+                        putInt("linkItemIndex", index)
+                    }
+                    findNavController().navigate(R.id.action_nav_link_library_to_readingSpaceFragment, bundle)
+                }
             },
             onRemoveClick = { linkItem ->
                 viewModel.removeLink(linkItem)

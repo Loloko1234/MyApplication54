@@ -28,4 +28,14 @@
         android:name="com.example.myapplication54.ui.linklibrary.LinkLibraryFragment"
         android:label="@string/menu_link_library"
         tools:layout="@layout/fragment_link_library" />
+
+    <fragment
+        android:id="@+id/readingSpaceFragment"
+        android:name="com.example.myapplication54.ui.ReadingSpaceFragment"
+        android:label="Reading Space"
+        tools:layout="@layout/fragment_reading_space" />
+
+    <action
+        android:id="@+id/action_nav_link_library_to_readingSpaceFragment"
+        app:destination="@id/readingSpaceFragment" />
 </navigation>
