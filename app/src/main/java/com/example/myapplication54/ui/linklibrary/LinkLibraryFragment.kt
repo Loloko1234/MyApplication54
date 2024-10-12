@@ -29,7 +29,7 @@ class LinkLibraryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this).get(LinkLibraryViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity()).get(LinkLibraryViewModel::class.java)
 
         setupRecyclerView()
         setupAddButton()
@@ -41,7 +41,6 @@ class LinkLibraryFragment : Fragment() {
             onItemClick = { linkItem ->
                 val index = viewModel.links.value?.indexOf(linkItem) ?: -1
                 if (index != -1) {
-                    viewModel.scrapeContent(linkItem)
                     val bundle = Bundle().apply {
                         putInt("linkItemIndex", index)
                     }
