@@ -106,11 +106,18 @@ class LinkLibraryViewModel(application: Application) : AndroidViewModel(applicat
             val updatedLinks = _links.value?.toMutableList() ?: mutableListOf()
             val index = updatedLinks.indexOfFirst { it.url == linkItem.url }
             if (index != -1) {
-                updatedLinks[index] = linkItem.copy(chapter = newChapter, content = "")
+                val updatedUrl = updateUrlWithNewChapter(linkItem.url, newChapter)
+                val updatedLinkItem = linkItem.copy(chapter = newChapter, content = "", url = updatedUrl)
+                updatedLinks[index] = updatedLinkItem
                 _links.value = updatedLinks
                 saveLinks()
-                scrapeContent(updatedLinks[index])
+                scrapeContent(updatedLinkItem)
             }
         }
+    }
+
+    private fun updateUrlWithNewChapter(currentUrl: String, newChapter: Int): String {
+        val regex = Regex("chapter-\\d+")
+        return regex.replace(currentUrl, "chapter-$newChapter")
     }
 }
