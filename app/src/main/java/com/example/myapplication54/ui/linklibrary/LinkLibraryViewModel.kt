@@ -28,25 +28,18 @@ class LinkLibraryViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private fun loadLinks() {
-        Log.d("LinkLibraryViewModel", "loadLinks() called")
         val linksJson = sharedPreferences.getString("links", null)
-        Log.d("LinkLibraryViewModel", "Loaded links JSON: $linksJson")
         if (linksJson != null) {
             val type = object : TypeToken<List<LinkItem>>() {}.type
-            val loadedLinks = gson.fromJson<List<LinkItem>>(linksJson, type)
-            _links.value = loadedLinks
-            Log.d("LinkLibraryViewModel", "Loaded links: $loadedLinks")
+            _links.value = gson.fromJson(linksJson, type)
         } else {
             _links.value = emptyList()
-            Log.d("LinkLibraryViewModel", "No links found in SharedPreferences")
         }
     }
 
     private fun saveLinks() {
         val linksJson = gson.toJson(_links.value)
-        Log.d("LinkLibraryViewModel", "Saving links: $linksJson")
-        sharedPreferences.edit().putString("links", linksJson).commit()
-        Log.d("LinkLibraryViewModel", "Links saved")
+        sharedPreferences.edit().putString("links", linksJson).apply()
     }
 
     fun addLink(url: String) {
@@ -54,49 +47,30 @@ class LinkLibraryViewModel(application: Application) : AndroidViewModel(applicat
             val linkItem = LinkItem(url)
             try {
                 val doc = Jsoup.connect(url).get()
-                Log.d("LinkLibraryViewModel", "HTML content: ${doc.outerHtml()}")
-                val novelTitleElement = doc.select("a.novel-title").first()
-                Log.d("LinkLibraryViewModel", "Novel title element: $novelTitleElement")
-                if (novelTitleElement != null) {
-                    linkItem.title = novelTitleElement.attr("title")
-                    Log.d("LinkLibraryViewModel", "Extracted title: ${linkItem.title}")
-                } else {
-                    linkItem.title = "Unable to fetch title"
-                    Log.d("LinkLibraryViewModel", "Novel title element not found")
-                }
+                linkItem.title = doc.select("a.novel-title").first()?.attr("title") ?: "Unable to fetch title"
             } catch (e: Exception) {
                 linkItem.title = "Unable to fetch title"
-                Log.e("LinkLibraryViewModel", "Error fetching title", e)
             }
-            val currentLinks = _links.value.orEmpty().toMutableList()
-            currentLinks.add(linkItem)
-            _links.postValue(currentLinks)
+            _links.postValue(_links.value.orEmpty() + linkItem)
             withContext(Dispatchers.Main) {
                 saveLinks()
             }
-            Log.d("LinkLibraryViewModel", "Added link: $linkItem")
         }
     }
 
     fun removeLink(linkItem: LinkItem) {
-        val currentLinks = _links.value.orEmpty().toMutableList()
-        currentLinks.remove(linkItem)
-        _links.value = currentLinks
+        _links.value = _links.value.orEmpty() - linkItem
         saveLinks()
     }
 
     fun scrapeContent(linkItem: LinkItem) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                Log.d("Scraping", "Starting to scrape: ${linkItem.url}")
                 val doc = Jsoup.connect(linkItem.url).get()
-                val paragraphs = doc.select("p")
-                val content = paragraphs.joinToString("\n\n") { it.text() }
-                Log.d("Scraping", "Scraped content length: ${content.length}")
-                linkItem.content = content
+                linkItem.content = doc.select("p").joinToString("\n\n") { it.text() }
                 _links.postValue(_links.value)
             } catch (e: Exception) {
-                Log.e("Scraping", "Error scraping content", e)
+                // Handle error
             }
         }
     }
@@ -106,7 +80,7 @@ class LinkLibraryViewModel(application: Application) : AndroidViewModel(applicat
             val updatedLinks = _links.value?.toMutableList() ?: mutableListOf()
             val index = updatedLinks.indexOfFirst { it.url == linkItem.url }
             if (index != -1) {
-                val updatedUrl = updateUrlWithNewChapter(linkItem.url, newChapter)
+                val updatedUrl = linkItem.url.replace(Regex("chapter-\\d+"), "chapter-$newChapter")
                 val updatedLinkItem = linkItem.copy(chapter = newChapter, content = "", url = updatedUrl)
                 updatedLinks[index] = updatedLinkItem
                 _links.value = updatedLinks
@@ -114,10 +88,5 @@ class LinkLibraryViewModel(application: Application) : AndroidViewModel(applicat
                 scrapeContent(updatedLinkItem)
             }
         }
-    }
-
-    private fun updateUrlWithNewChapter(currentUrl: String, newChapter: Int): String {
-        val regex = Regex("chapter-\\d+")
-        return regex.replace(currentUrl, "chapter-$newChapter")
     }
 }

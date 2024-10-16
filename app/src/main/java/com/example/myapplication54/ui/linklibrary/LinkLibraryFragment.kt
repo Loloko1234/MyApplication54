@@ -15,61 +15,54 @@ class LinkLibraryFragment : Fragment() {
 
     private var _binding: FragmentLinkLibraryBinding? = null
     private val binding get() = _binding!!
-    private lateinit var viewModel: LinkLibraryViewModel
-    private lateinit var adapter: LinkAdapter
+    private val viewModel: LinkLibraryViewModel by lazy { ViewModelProvider(requireActivity())[LinkLibraryViewModel::class.java] }
+    private val adapter: LinkAdapter by lazy { createAdapter() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentLinkLibraryBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    ): View =
+        FragmentLinkLibraryBinding.inflate(inflater, container, false).also { _binding = it }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(requireActivity()).get(LinkLibraryViewModel::class.java)
-
         setupRecyclerView()
         setupAddButton()
         observeLinks()
     }
 
     private fun setupRecyclerView() {
-        adapter = LinkAdapter(
-            onItemClick = { linkItem ->
-                val index = viewModel.links.value?.indexOf(linkItem) ?: -1
-                if (index != -1) {
-                    val bundle = Bundle().apply {
-                        putInt("linkItemIndex", index)
-                    }
-                    findNavController().navigate(R.id.action_nav_link_library_to_readingSpaceFragment, bundle)
-                }
-            },
-            onRemoveClick = { linkItem ->
-                viewModel.removeLink(linkItem)
-            }
-        )
-        binding.recyclerViewLinks.layoutManager = LinearLayoutManager(context)
-        binding.recyclerViewLinks.adapter = adapter
+        binding.recyclerViewLinks.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = this@LinkLibraryFragment.adapter
+        }
     }
 
-    private fun setupAddButton() {
-        binding.buttonAddLink.setOnClickListener {
-            val link = binding.editTextLink.text.toString().trim()
-            if (link.isNotEmpty()) {
+    private fun setupAddButton() = with(binding) {
+        buttonAddLink.setOnClickListener {
+            editTextLink.text.toString().trim().takeIf { it.isNotEmpty() }?.let { link ->
                 viewModel.addLink(link)
-                binding.editTextLink.text.clear()
+                editTextLink.text.clear()
             }
         }
     }
 
     private fun observeLinks() {
-        viewModel.links.observe(viewLifecycleOwner) { links ->
-            adapter.submitList(links)
-        }
+        viewModel.links.observe(viewLifecycleOwner, adapter::submitList)
     }
+
+    private fun createAdapter() = LinkAdapter(
+        onItemClick = { linkItem ->
+            viewModel.links.value?.indexOf(linkItem)?.let { index ->
+                findNavController().navigate(
+                    R.id.action_nav_link_library_to_readingSpaceFragment,
+                    Bundle().apply { putInt("linkItemIndex", index) }
+                )
+            }
+        },
+        onRemoveClick = viewModel::removeLink
+    )
 
     override fun onDestroyView() {
         super.onDestroyView()

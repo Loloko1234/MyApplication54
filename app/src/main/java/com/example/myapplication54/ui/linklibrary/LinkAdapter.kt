@@ -1,14 +1,11 @@
 package com.example.myapplication54.ui.linklibrary
 
-import android.content.Intent
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication54.databinding.ItemLinkBinding
-import android.view.View
 
 class LinkAdapter(
     private val onItemClick: (LinkItem) -> Unit,
@@ -28,24 +25,13 @@ class LinkAdapter(
         fun bind(linkItem: LinkItem) {
             binding.textViewTitle.text = linkItem.title
             binding.textViewChapter.text = "Chapter ${linkItem.chapter}"
-            binding.textViewChapter.visibility = View.VISIBLE
-            binding.textViewUrl.visibility = View.GONE
-            binding.root.setOnClickListener {
-                onItemClick(linkItem)
-            }
-            binding.buttonRemove.setOnClickListener {
-                onRemoveClick(linkItem)
-            }
+            binding.root.setOnClickListener { onItemClick(linkItem) }
+            binding.buttonRemove.setOnClickListener { onRemoveClick(linkItem) }
         }
     }
 
     class LinkDiffCallback : DiffUtil.ItemCallback<LinkItem>() {
-        override fun areItemsTheSame(oldItem: LinkItem, newItem: LinkItem): Boolean {
-            return oldItem.url == newItem.url
-        }
-
-        override fun areContentsTheSame(oldItem: LinkItem, newItem: LinkItem): Boolean {
-            return oldItem == newItem
-        }
+        override fun areItemsTheSame(oldItem: LinkItem, newItem: LinkItem) = oldItem.url == newItem.url
+        override fun areContentsTheSame(oldItem: LinkItem, newItem: LinkItem) = oldItem == newItem
     }
 }
