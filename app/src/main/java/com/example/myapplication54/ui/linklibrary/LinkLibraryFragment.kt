@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.navigation.fragment.findNavController
 import com.example.myapplication54.databinding.FragmentLinkLibraryBinding
@@ -22,8 +23,10 @@ class LinkLibraryFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View =
-        FragmentLinkLibraryBinding.inflate(inflater, container, false).also { _binding = it }.root
+    ): View {
+        _binding = FragmentLinkLibraryBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,7 +37,7 @@ class LinkLibraryFragment : Fragment() {
 
     private fun setupRecyclerView() {
         binding.recyclerViewLinks.apply {
-            layoutManager = LinearLayoutManager(context)
+            layoutManager = GridLayoutManager(context, 2)
             adapter = this@LinkLibraryFragment.adapter
         }
     }
@@ -61,7 +64,9 @@ class LinkLibraryFragment : Fragment() {
                 )
             }
         },
-        onRemoveClick = viewModel::removeLink
+        onRemoveClick = { linkItem ->
+            viewModel.removeLink(linkItem)
+        }
     )
 
     override fun onDestroyView() {
